@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text;
 
 namespace MemoryCopy
 {
@@ -23,188 +24,250 @@ namespace MemoryCopy
 
     public sealed class MemoryCopy
     {
+        private ByteOrder byteOrder = ByteOrder.BigEndian;
+
+        /// <summary>
+        /// Set/retrieve byte order for primitive types.
+        /// </summary>
+        public ByteOrder ByteOrder 
+        {
+            get
+            {
+                return byteOrder;
+            }
+            set
+            {
+                byteOrder = value;
+            }
+        }
+
         /// <summary>
         /// Build an object of the specified type by reading data from the 
-        /// provided byte array. The type should provide a default constructor.
-        /// If the type has array objects, they should be instantiated when 
-        /// their size is read from serialized data.
+        /// provided byte array. The types should provide a default constructor.
+        /// Type can be a primitive type. If type is not a primitive type, 
+        /// its class should decorate its properties using the
+        /// DataMemberAttribute. The Order property of that attribute can
+        /// be used to determine the order in which values will be read.
+        /// 
+        /// Supports most primitive types listed at 
+        /// http://msdn.microsoft.com/en-us/library/eahchzkf.aspx (and enums) 
+        /// except floating point types.
+        /// 
+        /// If type is an array of primitive types, it should be initialized when 
+        /// its size is read from serialized data.
+        /// 
+        /// Text data cannot be read directly. Read it as an array of bytes and
+        /// handle it appropriately.
+        /// 
         /// </summary>
         /// <param name="t">Type of object to build</param>
         /// <param name="data">Serialized data to read</param>
         /// <param name="startIndex">Index to start reading from. Its value 
         /// points to the byte after the last byte read upon return.</param>
-        /// <param name="byteOrder">Byte order of serialized data</param>
         /// <param name="inherit">Causes inherited properties to be read when true.</param>
         /// <returns></returns>
-        public static object Read(Type t, byte[] data, ref int startIndex,
-            ByteOrder byteOrder, bool inherit)
+        public object Read(Type t, byte[] data, ref int startIndex, bool inherit)
         {
-            object o = Activator.CreateInstance(t);
-            IList<PropertyInfo> properties = GetProperties(o, inherit);
-            foreach (PropertyInfo property in properties)
+            object o;
+            byte[] bytes;
+
+            if (t.GetElementType().IsPrimitive)
             {
-                byte[] bytes;
-
-                object val;
-
-                if (property.PropertyType.IsEnum)
+                if (t == typeof(int))
                 {
-                    val = GetValue(property.PropertyType,
-                        property.GetValue(o, null));
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(int));
+                    o = BitConverter.ToInt32(bytes, 0);
+                    startIndex += sizeof(int);
+                }
+                else if (t == typeof(uint))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(uint));
+                    o = BitConverter.ToUInt32(bytes, 0);
+                    startIndex += sizeof(uint);
+                }
+                else if (t == typeof(short))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(short));
+                    o = BitConverter.ToInt16(bytes, 0);
+                    startIndex += sizeof(short);
+                }
+                else if (t == typeof(ushort))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(ushort));
+                    o = BitConverter.ToUInt16(bytes, 0);
+                    startIndex += sizeof(ushort);
+                }
+                else if (t == typeof(byte))
+                {
+                    o = data[startIndex];
+                    startIndex++;
+                }
+                else if (t == typeof(long))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(long));
+                    o = BitConverter.ToInt64(bytes, 0);
+                    startIndex += sizeof(long);
+                }
+                else if (t == typeof(ulong))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(ulong));
+                    o = BitConverter.ToUInt64(bytes, 0);
+                    startIndex += sizeof(ulong);
                 }
                 else
                 {
-                    val = property.GetValue(o, null);
+                    throw new NotSupportedException("Type not supported: " + t);
+                }
+                return o;
+            }
+
+            // Not a primitive type
+
+            o = Activator.CreateInstance(t);
+
+            IList<PropertyInfo> properties = GetProperties(o, inherit);
+            foreach (PropertyInfo property in properties)
+            {
+                object pVal;
+                Type pType;
+
+                if (property.PropertyType.IsEnum)
+                {
+                    pVal = property.GetValue(o, null);
+                    pType = Enum.GetUnderlyingType(property.PropertyType);
+                }
+                else
+                {
+                    pVal = property.GetValue(o, null);
+                    pType = pVal.GetType();
                 }
 
-                if (val is int)
+                if (pType.IsPrimitive)
                 {
-                    bytes = ExtractBytes(data, startIndex, byteOrder, 4);
-                    property.SetValue(o, BitConverter.ToInt32(bytes, 0), null);
-                    startIndex += 4;
+                    property.SetValue(o, Read(pType, data, ref startIndex, inherit), null);
                 }
-                else if (val is uint)
+                else if (pVal is byte[])
                 {
-                    bytes = ExtractBytes(data, startIndex, byteOrder, 4);
-                    property.SetValue(o, BitConverter.ToUInt32(bytes, 0), null);
-                    startIndex += 4;
-                }
-                else if (val is short)
-                {
-                    bytes = ExtractBytes(data, startIndex, byteOrder, 2);
-                    property.SetValue(o, BitConverter.ToInt16(bytes, 0), null);
-                    startIndex += 2;
-                }
-                else if (val is ushort)
-                {
-                    bytes = ExtractBytes(data, startIndex, byteOrder, 2);
-                    property.SetValue(o, BitConverter.ToUInt16(bytes, 0), null);
-                    startIndex += 2;
-                }
-                else if (val is byte)
-                {
-                    property.SetValue(o, data[startIndex], null);
-                    startIndex++;
-                }
-                else if (val is byte[])
-                {
-                    int len = ((byte[])val).Length;
-                    Array.Copy(data, startIndex, (byte[])val, 0, len);
+                    int len = ((byte[])pVal).Length;
+                    Array.Copy(data, startIndex, (byte[])pVal, 0, len);
                     startIndex += len;
                 }
-                else if (val is string)
+                else if (pVal is Array)
                 {
-                    if (data.Length > 1 && startIndex < data.Length)
-                    {
-                        System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-                        string str = enc.GetString(data, startIndex, data.Length - 1 - startIndex);
-                        property.SetValue(o, (str.Contains("\0")) ? str.Remove(str.IndexOf('\0', 0)) : str, null);
-                    }
-                    else
-                    {
-                        property.SetValue(o, null, null);
-                    }
-                    startIndex++;
-                }
-                else if (val is Array && val.GetType().GetElementType().IsPrimitive)
-                {
-                    for (int i = 0; i < ((Array)val).Length; i++)
-                    {
-                        // TODO assuming uint
-                        bytes = ExtractBytes(data, startIndex, byteOrder, 4);
-                        ((Array)val).SetValue(BitConverter.ToUInt32(bytes, 0), i);
-                        startIndex += 4;
-                    }
-                }
-                else if (val is Array)
-                {
-                    Array a = (Array)val;
-                    for (int i = 0; i < ((Array)val).Length; i++)
+                    Array a = (Array)pVal;
+                    for (int i = 0; i < ((Array)pVal).Length; i++)
                     {
                         a.SetValue(Read(a.GetValue(i).GetType(), data, ref startIndex, 
-                            byteOrder, inherit), i);
+                            inherit), i);
                     }
                 }
+                else
+                {
+                    throw new NotSupportedException("Type not supported: " + pVal.GetType());
+                }
             }
+
             return o;
         }
 
         /// <summary>
-        /// Serializes an object into the specified byte array.
+        /// Serializes an object into the specified byte array. See Read method for
+        /// further details.
+        /// 
         /// </summary>
         /// <param name="o">Object to serialize.</param>
         /// <param name="data">Byte array where serialized data will be written.</param>
         /// <param name="startIndex">Index from which to start writing data.</param>
-        /// <param name="byteOrder">Byte order.</param>
         /// <param name="inherit">Determines whether inherited properties should be serialized.</param>
-        public static void Write(object o, byte[] data, ref int startIndex,
-            ByteOrder byteOrder, bool inherit)
+        public void Write(object o, byte[] data, ref int startIndex, bool inherit)
         {
+            byte[] bytes;
+
+            if (o.GetType().GetElementType().IsPrimitive)
+            {
+                if (o is int)
+                {
+                    bytes = BitConverter.GetBytes((int)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(int));
+                    startIndex += sizeof(int);
+                }
+                else if (o is uint)
+                {
+                    bytes = BitConverter.GetBytes((uint)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(uint));
+                    startIndex += sizeof(uint);
+                }
+                else if (o is short)
+                {
+                    bytes = BitConverter.GetBytes((short)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(short));
+                    startIndex += sizeof(short);
+                }
+                else if (o is ushort)
+                {
+                    bytes = BitConverter.GetBytes((ushort)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(ushort));
+                    startIndex += sizeof(ushort);
+                }
+                else if (o is long)
+                {
+                    bytes = BitConverter.GetBytes((long)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(long));
+                    startIndex += sizeof(long);
+                }
+                else if (o is ulong)
+                {
+                    bytes = BitConverter.GetBytes((ulong)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(ulong));
+                    startIndex += sizeof(ulong);
+                }
+                else if (o is byte)
+                {
+                    data[startIndex] = (byte)o;
+                    startIndex++;
+                }
+                return;
+            }
+
             IList<PropertyInfo> properties = GetProperties(o, inherit);
 
             foreach (PropertyInfo property in properties)
             {
-                byte[] bytes;
-
-                object val = null;
+                object pVal;
+                Type pType;
 
                 if (property.PropertyType.IsEnum)
                 {
-                    val = GetValue(property.PropertyType, property.GetValue(o, null));
+                    pType = Enum.GetUnderlyingType(property.PropertyType);
+                    pVal = Convert.ChangeType(property.GetValue(o, null), pType);
                 }
                 else
                 {
-                    val = property.GetValue(o, null);
+                    pVal = property.GetValue(o, null);
+                    pType = pVal.GetType();
                 }
 
-                if (val is int)
+                if (pType.IsPrimitive)
                 {
-                    bytes = BitConverter.GetBytes((int)val);
-                    ReverseBytes(bytes, byteOrder);
-                    Array.Copy(bytes, 0, data, startIndex, 4);
-                    startIndex += 4;
+                    Write(pVal, data, ref startIndex, inherit);
                 }
-                else if (val is uint)
+                else if (pVal is byte[])
                 {
-                    bytes = BitConverter.GetBytes((uint)val);
-                    ReverseBytes(bytes, byteOrder);
-                    Array.Copy(bytes, 0, data, startIndex, 4);
-                    startIndex += 4;
-                }
-                else if (val is ushort)
-                {
-                    bytes = BitConverter.GetBytes((ushort)val);
-                    ReverseBytes(bytes, byteOrder);
-                    Array.Copy(bytes, 0, data, startIndex, 2);
-                    startIndex += 2;
-                }
-                else if (val is byte)
-                {
-                    data[startIndex] = (byte)val;
-                    startIndex++;
-                }
-                else if (val is byte[])
-                {
-                    bytes = (byte[])val;
+                    bytes = (byte[])pVal;
                     Array.Copy(bytes, 0, data, startIndex, bytes.Length);
                     startIndex += bytes.Length;
                 }
-                else if (val is Array && val.GetType().GetElementType().IsPrimitive)
+                else if (pVal is Array)
                 {
-                    foreach (object item in (Array)val)
+                    foreach (object item in (Array)pVal)
                     {
-                        // assuming uint
-                        bytes = BitConverter.GetBytes((uint)item);
-                        ReverseBytes(bytes, byteOrder);
-                        Array.Copy(bytes, 0, data, startIndex, 4);
-                        startIndex += 4;
-                    }
-                }
-                else if (val is Array)
-                {
-                    foreach (object item in (Array)val)
-                    {
-                        Write(item, data, ref startIndex, byteOrder, false);
+                        Write(item, data, ref startIndex, false);
                     }
                 }
             }
@@ -247,31 +310,6 @@ namespace MemoryCopy
         private static bool IsDataMemberAttribute(object o)
         {
             return o is DataMemberAttribute;
-        }
-
-        private static object GetValue(Type enumType, object enumVal)
-        {
-            Type t = Enum.GetUnderlyingType(enumType);
-
-            object val = null;
-
-            if (t == typeof(int))
-            {
-                val = (int)enumVal;
-            }
-            else if (t == typeof(uint))
-            {
-                val = (uint)enumVal;
-            }
-            else if (t == typeof(ushort))
-            {
-                val = (ushort)enumVal;
-            }
-            else if (t == typeof(byte))
-            {
-                val = (byte)enumVal;
-            }
-            return val;
         }
 
         public static byte[] ExtractBytes(byte[] data, int startIndex,
