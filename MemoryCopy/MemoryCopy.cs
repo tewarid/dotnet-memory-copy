@@ -183,7 +183,7 @@ namespace MemoryCopy
         {
             byte[] bytes;
 
-            if (o.GetType().GetElementType().IsPrimitive)
+            if (o.GetType().IsPrimitive)
             {
                 if (o is int)
                 {
@@ -267,7 +267,7 @@ namespace MemoryCopy
                 {
                     foreach (object item in (Array)pVal)
                     {
-                        Write(item, data, ref startIndex, false);
+                        Write(item, data, ref startIndex, inherit);
                     }
                 }
             }
@@ -312,7 +312,7 @@ namespace MemoryCopy
             return o is DataMemberAttribute;
         }
 
-        public static byte[] ExtractBytes(byte[] data, int startIndex,
+        private static byte[] ExtractBytes(byte[] data, int startIndex,
             ByteOrder byteOrder, int length)
         {
             byte[] bytes = new byte[length];
@@ -325,7 +325,7 @@ namespace MemoryCopy
             return bytes;
         }
 
-        public static byte[] ReverseBytes(byte[] inArray, ByteOrder byteOrder)
+        private static byte[] ReverseBytes(byte[] inArray, ByteOrder byteOrder)
         {
             if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
                 (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
@@ -336,7 +336,7 @@ namespace MemoryCopy
             return inArray;
         }
 
-        public static byte[] ReverseBytes(byte[] inArray)
+        private static byte[] ReverseBytes(byte[] inArray)
         {
             byte temp;
             int highCtr = inArray.Length - 1;
