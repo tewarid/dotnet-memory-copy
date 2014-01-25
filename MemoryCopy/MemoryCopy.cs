@@ -71,7 +71,7 @@ namespace MemoryCopy
             object o;
             byte[] bytes;
 
-            if (t.GetElementType().IsPrimitive)
+            if (t.IsPrimitive)
             {
                 if (t == typeof(int))
                 {
@@ -157,8 +157,8 @@ namespace MemoryCopy
                     Array a = (Array)pVal;
                     for (int i = 0; i < ((Array)pVal).Length; i++)
                     {
-                        a.SetValue(Read(a.GetValue(i).GetType(), data, ref startIndex, 
-                            inherit), i);
+                        a.SetValue(Read(a.GetType().GetElementType(), data, 
+                            ref startIndex, inherit), i);
                     }
                 }
                 else
