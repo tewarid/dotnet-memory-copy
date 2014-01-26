@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
-using System.Text;
 
 namespace MemoryCopy
 {
@@ -73,19 +72,7 @@ namespace MemoryCopy
 
             if (t.IsPrimitive)
             {
-                if (t == typeof(int))
-                {
-                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(int));
-                    o = BitConverter.ToInt32(bytes, 0);
-                    startIndex += sizeof(int);
-                }
-                else if (t == typeof(uint))
-                {
-                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(uint));
-                    o = BitConverter.ToUInt32(bytes, 0);
-                    startIndex += sizeof(uint);
-                }
-                else if (t == typeof(short))
+                if (t == typeof(short))
                 {
                     bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(short));
                     o = BitConverter.ToInt16(bytes, 0);
@@ -96,6 +83,18 @@ namespace MemoryCopy
                     bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(ushort));
                     o = BitConverter.ToUInt16(bytes, 0);
                     startIndex += sizeof(ushort);
+                }
+                else if (t == typeof(int))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(int));
+                    o = BitConverter.ToInt32(bytes, 0);
+                    startIndex += sizeof(int);
+                }
+                else if (t == typeof(uint))
+                {
+                    bytes = ExtractBytes(data, startIndex, byteOrder, sizeof(uint));
+                    o = BitConverter.ToUInt32(bytes, 0);
+                    startIndex += sizeof(uint);
                 }
                 else if (t == typeof(byte))
                 {
@@ -185,21 +184,7 @@ namespace MemoryCopy
 
             if (o.GetType().IsPrimitive)
             {
-                if (o is int)
-                {
-                    bytes = BitConverter.GetBytes((int)o);
-                    ReverseBytes(bytes, byteOrder);
-                    Array.Copy(bytes, 0, data, startIndex, sizeof(int));
-                    startIndex += sizeof(int);
-                }
-                else if (o is uint)
-                {
-                    bytes = BitConverter.GetBytes((uint)o);
-                    ReverseBytes(bytes, byteOrder);
-                    Array.Copy(bytes, 0, data, startIndex, sizeof(uint));
-                    startIndex += sizeof(uint);
-                }
-                else if (o is short)
+                if (o is short)
                 {
                     bytes = BitConverter.GetBytes((short)o);
                     ReverseBytes(bytes, byteOrder);
@@ -212,6 +197,20 @@ namespace MemoryCopy
                     ReverseBytes(bytes, byteOrder);
                     Array.Copy(bytes, 0, data, startIndex, sizeof(ushort));
                     startIndex += sizeof(ushort);
+                }
+                else if (o is int)
+                {
+                    bytes = BitConverter.GetBytes((int)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(int));
+                    startIndex += sizeof(int);
+                }
+                else if (o is uint)
+                {
+                    bytes = BitConverter.GetBytes((uint)o);
+                    ReverseBytes(bytes, byteOrder);
+                    Array.Copy(bytes, 0, data, startIndex, sizeof(uint));
+                    startIndex += sizeof(uint);
                 }
                 else if (o is long)
                 {
@@ -312,7 +311,7 @@ namespace MemoryCopy
             return o is DataMemberAttribute;
         }
 
-        private static byte[] ExtractBytes(byte[] data, int startIndex,
+        private byte[] ExtractBytes(byte[] data, int startIndex,
             ByteOrder byteOrder, int length)
         {
             byte[] bytes = new byte[length];
@@ -325,7 +324,7 @@ namespace MemoryCopy
             return bytes;
         }
 
-        private static byte[] ReverseBytes(byte[] inArray, ByteOrder byteOrder)
+        private byte[] ReverseBytes(byte[] inArray, ByteOrder byteOrder)
         {
             if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
                 (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
@@ -336,7 +335,7 @@ namespace MemoryCopy
             return inArray;
         }
 
-        private static byte[] ReverseBytes(byte[] inArray)
+        private byte[] ReverseBytes(byte[] inArray)
         {
             byte temp;
             int highCtr = inArray.Length - 1;
