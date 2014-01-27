@@ -88,6 +88,20 @@ namespace MemoryCopyTest
         { }
     }
 
+    struct S
+    {
+        [DataMember(Order=0)]
+        public uint Command { get; private set; }
+        [DataMember(Order = 1)]
+        public short Value { get; private set; }
+
+        public S(uint command, short value) : this()
+        {
+            Command = command;
+            Value = value;
+        }
+    }
+
     [TestClass]
     public class MemoryCopyTest
     {
@@ -95,13 +109,16 @@ namespace MemoryCopyTest
         B b1;
         B b2;
         C c;
-        MemoryCopy.MemoryCopy bigCopy;
-        MemoryCopy.MemoryCopy littleCopy;
+        S s;
         byte[] aBigEndian;
         byte[] b1BigEndian;
         byte[] b1BigEndianNoInheritance;
         byte[] b1LittleEndian;
         byte[] cBigEndian;
+        byte[] sBigEndian;
+
+        MemoryCopy.MemoryCopy bigCopy;
+        MemoryCopy.MemoryCopy littleCopy;
 
         [TestInitialize]
         public void Initialize()
@@ -120,6 +137,9 @@ namespace MemoryCopyTest
             c.Items[0] = b1;
             c.Items[1] = b2;
             cBigEndian = new byte[16] { 0, 2, 0, 0, 0, 0xC1, 0xB1, 0, 0xAB, 0, 0, 0, 0xC2, 0xB1, 0, 0xCD };
+            s = new S(0x00AB00CD, -255);
+            sBigEndian = new byte[6] { 0, 0xAB, 0, 0xCD, 0xFF, 0x01 };
+
             bigCopy = new MemoryCopy.MemoryCopy();
             littleCopy = new MemoryCopy.MemoryCopy();
             littleCopy.ByteOrder = ByteOrder.LittleEndian;
@@ -173,6 +193,16 @@ namespace MemoryCopyTest
             bigCopy.Write(c, data, ref index, true);
             Assert.AreEqual(cBigEndian.Length, index);
             CollectionAssert.AreEqual(cBigEndian, data);
+        }
+
+        [TestMethod]
+        public void TestWriteStruct()
+        {
+            byte[] data = new byte[sBigEndian.Length];
+            int index = 0;
+            bigCopy.Write(s, data, ref index, true);
+            Assert.AreEqual(sBigEndian.Length, index);
+            CollectionAssert.AreEqual(sBigEndian, data);
         }
 
         [TestMethod]
@@ -230,6 +260,16 @@ namespace MemoryCopyTest
             Assert.AreEqual(c.Items[1].Command, copy.Items[1].Command);
             Assert.AreEqual(c.Items[1].Code, copy.Items[1].Code);
             Assert.AreEqual(c.Items[1].Reason, copy.Items[1].Reason);
+        }
+
+        [TestMethod]
+        public void TestReadStruct()
+        {
+            int index = 0;
+            S copy = (S)bigCopy.Read(typeof(S), sBigEndian, ref index, true);
+            Assert.AreEqual(sBigEndian.Length, index);
+            Assert.AreEqual(s.Command, copy.Command);
+            Assert.AreEqual(s.Value, copy.Value);
         }
     }
 }
