@@ -1,10 +1,10 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Runtime.Serialization;
-using MemoryCopy;
+using NetMemoryCopy;
 using System.Collections;
 
-namespace MemoryCopyTest
+namespace NetMemoryCopyTest
 {
     enum Command : int
     {
@@ -117,8 +117,8 @@ namespace MemoryCopyTest
         byte[] cBigEndian;
         byte[] sBigEndian;
 
-        MemoryCopy.MemoryCopy bigCopy;
-        MemoryCopy.MemoryCopy littleCopy;
+        NetMemoryCopy.MemoryCopy bigCopy;
+        NetMemoryCopy.MemoryCopy littleCopy;
 
         [TestInitialize]
         public void Initialize()
@@ -140,8 +140,8 @@ namespace MemoryCopyTest
             s = new S(0x00AB00CD, -255);
             sBigEndian = new byte[6] { 0, 0xAB, 0, 0xCD, 0xFF, 0x01 };
 
-            bigCopy = new MemoryCopy.MemoryCopy();
-            littleCopy = new MemoryCopy.MemoryCopy();
+            bigCopy = new NetMemoryCopy.MemoryCopy();
+            littleCopy = new NetMemoryCopy.MemoryCopy();
             littleCopy.ByteOrder = ByteOrder.LittleEndian;
         }
 

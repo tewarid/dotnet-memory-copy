@@ -7,8 +7,8 @@
     <ProjectGuid>{0BD451CC-8980-42AA-B0B3-E1B04B88B7A3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MemoryCopy</RootNamespace>
-    <AssemblyName>MemoryCopy</AssemblyName>
+    <RootNamespace>NetMemoryCopy</RootNamespace>
+    <AssemblyName>NetMemoryCopy</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -6,8 +6,8 @@
     <ProjectGuid>{2324E78A-2C75-483A-86BB-67C4864CF007}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MemoryCopyTest</RootNamespace>
-    <AssemblyName>MemoryCopyTest</AssemblyName>
+    <RootNamespace>NetMemoryCopyTest</RootNamespace>
+    <AssemblyName>NetMemoryCopyTest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -55,9 +55,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MemoryCopy\MemoryCopy.csproj">
+    <ProjectReference Include="..\NetMemoryCopy\NetMemoryCopy.csproj">
       <Project>{0bd451cc-8980-42aa-b0b3-e1b04b88b7a3}</Project>
-      <Name>MemoryCopy</Name>
+      <Name>NetMemoryCopy</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-namespace MemoryCopy
+namespace NetMemoryCopy
 {
     public enum ByteOrder
     {
@@ -272,9 +272,28 @@ namespace MemoryCopy
             }
         }
 
+        static Dictionary<string, IList<PropertyInfo>> cache = new Dictionary<string, IList<PropertyInfo>>();
+
+        /// <summary>
+        /// Retrieve an ordered list of properties for this object adorned with the
+        /// DataMember attribute. The list is ordered by the Order parameter of the
+        /// attribute.
+        /// </summary>
+        /// <param name="o">The object for which to recover the properties for</param>
+        /// <param name="inherit">Specifies whether inherited properties should be 
+        /// recoverd or not.</param>
+        /// <returns>An ordered list of properties.</returns>
         private static IList<PropertyInfo> GetProperties(object o, bool inherit)
         {
             Type type = o.GetType();
+
+            IList<PropertyInfo> list;
+            string tf = inherit ? "t" : "f";
+            cache.TryGetValue(type.FullName + tf, out list);
+
+            if (list != null)
+                return list;
+
             List<PropertyInfo> properties = new List<PropertyInfo>();
 
             if (inherit)
@@ -303,7 +322,12 @@ namespace MemoryCopy
                 if (attribute == null) continue;
                 else sFields.Add(((DataMemberAttribute)attribute).Order, property);
             }
-            return sFields.Values;
+
+            list = sFields.Values;
+
+            cache.Add(type.FullName + tf, list);
+
+            return list;
         }
 
         private static bool IsDataMemberAttribute(object o)
