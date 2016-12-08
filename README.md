@@ -1,4 +1,4 @@
-# NetMemoryCopy
+# NetMemoryCopy [![Build status](https://ci.appveyor.com/api/projects/status/5yu0qhae9nth2lur?svg=true)](https://ci.appveyor.com/project/tewarid/netmemorycopy)
 
 NetMemoryCopy is a .NET library to serialize an object to byte array and back.
 
