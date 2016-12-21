@@ -6,11 +6,11 @@
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
-    <licenseUrl>https://github.com/tewarid/NetMemoryCopy/blob/master/License.md</licenseUrl>
-    <projectUrl>https://github.com/tewarid/NetMemoryCopy</projectUrl>
+    <licenseUrl>https://github.com/tewarid/net-memory-copy/blob/master/License.md</licenseUrl>
+    <projectUrl>https://github.com/tewarid/net-memory-copy</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>README updated.</releaseNotes>
+    <releaseNotes>GitHub repo name change.</releaseNotes>
     <copyright>Copyright 2014-2016</copyright>
   </metadata>
 </package>
