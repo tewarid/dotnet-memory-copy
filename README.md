@@ -1,4 +1,4 @@
-# NetMemoryCopy [![Build status](https://ci.appveyor.com/api/projects/status/5yu0qhae9nth2lur?svg=true)](https://ci.appveyor.com/project/tewarid/netmemorycopy)
+# NetMemoryCopy [![Build status](https://ci.appveyor.com/api/projects/status/5yu0qhae9nth2lur?svg=true)](https://ci.appveyor.com/project/tewarid/netmemorycopy) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/4265958e03b84de6a62c3b91c2cc9111)](https://www.codacy.com/app/tewarid/net-memory-copy?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tewarid/net-memory-copy&amp;utm_campaign=Badge_Grade)
 
 NetMemoryCopy is a .NET library to serialize an object to byte array and back.
 

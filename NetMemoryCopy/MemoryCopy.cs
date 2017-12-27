@@ -151,18 +151,21 @@ namespace NetMemoryCopy
                     Array.Copy(data, startIndex, (byte[])pVal, 0, len);
                     startIndex += len;
                 }
-                else if (pVal is Array)
-                {
-                    Array a = (Array)pVal;
-                    for (int i = 0; i < ((Array)pVal).Length; i++)
-                    {
-                        a.SetValue(Read(a.GetType().GetElementType(), data, 
-                            ref startIndex, inherit), i);
-                    }
-                }
                 else
                 {
-                    throw new NotSupportedException("Type not supported: " + pVal.GetType());
+                    Array a = pVal as Array;
+                    if (a != null)
+                    {
+                        for (int i = 0; i < ((Array)pVal).Length; i++)
+                        {
+                            a.SetValue(Read(a.GetType().GetElementType(), data, 
+                                ref startIndex, inherit), i);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Type not supported: " + pVal.GetType());
+                    }
                 }
             }
 
@@ -231,6 +234,10 @@ namespace NetMemoryCopy
                     data[startIndex] = (byte)o;
                     startIndex++;
                 }
+                else
+                {
+                    throw new NotSupportedException("Type not supported: " + o.GetType());
+                }
                 return;
             }
 
@@ -262,11 +269,19 @@ namespace NetMemoryCopy
                     Array.Copy(bytes, 0, data, startIndex, bytes.Length);
                     startIndex += bytes.Length;
                 }
-                else if (pVal is Array)
+                else
                 {
-                    foreach (object item in (Array)pVal)
+                    Array a = pVal as Array;
+                    if (a != null)
                     {
-                        Write(item, data, ref startIndex, inherit);
+                        foreach (object item in a)
+                        {
+                            Write(item, data, ref startIndex, inherit);
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Type not supported: " + pType);
                     }
                 }
             }
@@ -292,7 +307,9 @@ namespace NetMemoryCopy
             cache.TryGetValue(type.FullName + tf, out list);
 
             if (list != null)
+            {
                 return list;
+            }
 
             List<PropertyInfo> properties = new List<PropertyInfo>();
 
@@ -319,8 +336,10 @@ namespace NetMemoryCopy
                 object[] attributes = property.GetCustomAttributes(false);
                 object attribute = Array.Find(attributes, IsDataMemberAttribute);
 
-                if (attribute == null) continue;
-                else sFields.Add(((DataMemberAttribute)attribute).Order, property);
+                if (attribute != null)
+                {
+                    sFields.Add(((DataMemberAttribute)attribute).Order, property);
+                }
             }
 
             list = sFields.Values;
@@ -335,7 +354,7 @@ namespace NetMemoryCopy
             return o is DataMemberAttribute;
         }
 
-        private byte[] ExtractBytes(byte[] data, int startIndex,
+        public static byte[] ExtractBytes(byte[] data, int startIndex,
             ByteOrder byteOrder, int length)
         {
             byte[] bytes = new byte[length];
@@ -343,23 +362,21 @@ namespace NetMemoryCopy
             if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
                 (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
             {
-                return ReverseBytes(bytes);
+                ReverseBytes(bytes);
             }
             return bytes;
         }
 
-        private byte[] ReverseBytes(byte[] inArray, ByteOrder byteOrder)
+        public static void ReverseBytes(byte[] inArray, ByteOrder byteOrder)
         {
             if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
                 (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
             {
                 ReverseBytes(inArray);
             }
-
-            return inArray;
         }
 
-        private byte[] ReverseBytes(byte[] inArray)
+        public static void ReverseBytes(byte[] inArray)
         {
             byte temp;
             int highCtr = inArray.Length - 1;
@@ -371,7 +388,6 @@ namespace NetMemoryCopy
                 inArray[highCtr] = temp;
                 highCtr -= 1;
             }
-            return inArray;
         }
     }
 }
