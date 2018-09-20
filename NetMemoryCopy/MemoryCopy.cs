@@ -144,7 +144,7 @@ namespace NetMemoryCopy
                 else if (pVal is byte[])
                 {
                     int len = ((byte[])pVal).Length;
-                    await stream.ReadAsync((byte[])pVal, 0, len);
+                    await ReadBytes(stream, (byte[])pVal);
                 }
                 else
                 {
@@ -340,11 +340,29 @@ namespace NetMemoryCopy
             return o is DataMemberAttribute;
         }
 
-        private static async Task<byte[]> ReadBytes(Stream stream, ByteOrder byteOrder,
-            int length)
+        private static async Task ReadBytes(Stream stream, byte[] b)
+        {
+            int read;
+            int offset = 0;
+            int count = b.Length;
+            while (count > 0)
+            {
+                read = await stream.ReadAsync(b, offset, count);
+                if (read == 0)
+                {
+                    // reached end of stream
+                    break;
+                }
+                offset += read;
+                count -= read;
+            }
+        }
+
+        private static async Task<byte[]> ReadBytes(Stream stream,
+            ByteOrder byteOrder, int length)
         {
             byte[] bytes = new byte[length];
-            await stream.ReadAsync(bytes, 0, length);
+            await ReadBytes(stream, bytes);
             if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
                 (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
             {
