@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("NetMemoryCopy")]
-[assembly: AssemblyDescription("A .NET library to read/write objects from/to byte arrays.")]
+[assembly: AssemblyDescription("A .NET library to read/write objects from/to byte streams.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Devendra Tewari")]
 [assembly: AssemblyProduct("NetMemoryCopy")]
-[assembly: AssemblyCopyright("Copyright ©  2014-2016")]
+[assembly: AssemblyCopyright("Copyright ©  2014-2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -32,4 +32,4 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.3.0.0")]

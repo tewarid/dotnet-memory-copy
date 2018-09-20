@@ -3,6 +3,8 @@ using System;
 using System.Runtime.Serialization;
 using NetMemoryCopy;
 using System.Collections;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace NetMemoryCopyTest
 {
@@ -149,9 +151,7 @@ namespace NetMemoryCopyTest
         public void TestWrite()
         {
             byte[] data = new byte[aBigEndian.Length];
-            int index = 0;
-            bigCopy.Write(a, data, ref index, false);
-            Assert.AreEqual(aBigEndian.Length, index);
+            bigCopy.Write(a, new MemoryStream(data), false);
             CollectionAssert.AreEqual(aBigEndian, data);
         }
 
@@ -159,9 +159,7 @@ namespace NetMemoryCopyTest
         public void TestWriteInherit1()
         {
             byte[] data = new byte[b1BigEndianNoInheritance.Length];
-            int index = 0;
-            bigCopy.Write(b1, data, ref index, false);
-            Assert.AreEqual(b1BigEndianNoInheritance.Length, index);
+            bigCopy.Write(b1, new MemoryStream(data), false);
             CollectionAssert.AreEqual(b1BigEndianNoInheritance, data);
         }
 
@@ -169,9 +167,7 @@ namespace NetMemoryCopyTest
         public void TestWriteInherit2()
         {
             byte[] data = new byte[b1BigEndian.Length];
-            int index = 0;
-            bigCopy.Write(b1, data, ref index, true);
-            Assert.AreEqual(b1BigEndian.Length, index);
+            bigCopy.Write(b1, new MemoryStream(data), true);
             CollectionAssert.AreEqual(b1BigEndian, data);
         }
 
@@ -179,9 +175,7 @@ namespace NetMemoryCopyTest
         public void TestWriteLittleEndian()
         {
             byte[] data = new byte[b1LittleEndian.Length];
-            int index = 0;
-            littleCopy.Write(b1, data, ref index, true);
-            Assert.AreEqual(b1LittleEndian.Length, index);
+            littleCopy.Write(b1, new MemoryStream(data), true);
             CollectionAssert.AreEqual(b1LittleEndian, data);
         }
 
@@ -189,9 +183,7 @@ namespace NetMemoryCopyTest
         public void TestWriteArray()
         {
             byte[] data = new byte[cBigEndian.Length];
-            int index = 0;
-            bigCopy.Write(c, data, ref index, true);
-            Assert.AreEqual(cBigEndian.Length, index);
+            bigCopy.Write(c, new MemoryStream(data), true);
             CollectionAssert.AreEqual(cBigEndian, data);
         }
 
@@ -199,60 +191,52 @@ namespace NetMemoryCopyTest
         public void TestWriteStruct()
         {
             byte[] data = new byte[sBigEndian.Length];
-            int index = 0;
-            bigCopy.Write(s, data, ref index, true);
-            Assert.AreEqual(sBigEndian.Length, index);
+            bigCopy.Write(s, new MemoryStream(data), true);
             CollectionAssert.AreEqual(sBigEndian, data);
         }
 
         [TestMethod]
-        public void TestRead()
+        public async Task TestRead()
         {
-            int index = 0;
-            A copy = (A)bigCopy.Read(typeof(A), aBigEndian, ref index, true);
-            Assert.AreEqual(aBigEndian.Length, index);
+            A copy = (A) await bigCopy.Read(typeof(A), new MemoryStream(aBigEndian), true);
             Assert.AreEqual(a.Command, copy.Command);
         }
 
         [TestMethod]
-        public void TestReadInherit1()
+        public async Task TestReadInherit1()
         {
-            int index = 0;
-            B copy = (B)bigCopy.Read(typeof(B), b1BigEndianNoInheritance, ref index, false);
-            Assert.AreEqual(b1BigEndianNoInheritance.Length, index);
+            B copy = (B) await bigCopy.Read(typeof(B),
+                new MemoryStream(b1BigEndianNoInheritance), false);
             Assert.AreNotEqual(b1.Command, copy.Command);
             Assert.AreEqual(b1.Code, copy.Code);
             Assert.AreEqual(b1.Reason, copy.Reason);
         }
 
         [TestMethod]
-        public void TestReadInherit2()
+        public async Task TestReadInherit2()
         {
-            int index = 0;
-            B copy = (B)bigCopy.Read(typeof(B), b1BigEndian, ref index, true);
-            Assert.AreEqual(b1BigEndian.Length, index);
+            B copy = (B) await bigCopy.Read(typeof(B),
+                new MemoryStream(b1BigEndian), true);
             Assert.AreEqual(b1.Command, copy.Command);
             Assert.AreEqual(b1.Code, copy.Code);
             Assert.AreEqual(b1.Reason, copy.Reason);
         }
 
         [TestMethod]
-        public void TestReadLittleEndian()
+        public async Task TestReadLittleEndian()
         {
-            int index = 0;
-            B copy = (B)littleCopy.Read(typeof(B), b1LittleEndian, ref index, true);
-            Assert.AreEqual(b1LittleEndian.Length, index);
+            B copy = (B) await littleCopy.Read(typeof(B),
+                new MemoryStream(b1LittleEndian), true);
             Assert.AreEqual(b1.Command, copy.Command);
             Assert.AreEqual(b1.Code, copy.Code);
             Assert.AreEqual(b1.Reason, copy.Reason);
         }
 
         [TestMethod]
-        public void TestReadArray()
+        public async Task TestReadArray()
         {
-            int index = 0;
-            C copy = (C)bigCopy.Read(typeof(C), cBigEndian, ref index, true);
-            Assert.AreEqual(cBigEndian.Length, index);
+            C copy = (C) await bigCopy.Read(typeof(C),
+                new MemoryStream(cBigEndian), true);
             Assert.AreEqual(c.Length, copy.Length);
             Assert.AreEqual(c.Items[0].Command, copy.Items[0].Command);
             Assert.AreEqual(c.Items[0].Code, copy.Items[0].Code);
@@ -263,11 +247,10 @@ namespace NetMemoryCopyTest
         }
 
         [TestMethod]
-        public void TestReadStruct()
+        public async Task TestReadStruct()
         {
-            int index = 0;
-            S copy = (S)bigCopy.Read(typeof(S), sBigEndian, ref index, true);
-            Assert.AreEqual(sBigEndian.Length, index);
+            S copy = (S) await bigCopy.Read(typeof(S),
+                new MemoryStream(sBigEndian), true);
             Assert.AreEqual(s.Command, copy.Command);
             Assert.AreEqual(s.Value, copy.Value);
         }
