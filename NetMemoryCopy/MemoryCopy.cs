@@ -67,7 +67,7 @@ namespace NetMemoryCopy
         /// points to the byte after the last byte read upon return.</param>
         /// <param name="inherit">Causes inherited properties to be read when true.</param>
         /// <returns>object of specified type read from the stream</returns>
-        public async Task<object> Read(Type t, Stream stream, bool inherit = true)
+        public async Task<object> Read(Type t, Stream stream, bool inherit)
         {
             object o;
             byte[] bytes;
@@ -76,22 +76,26 @@ namespace NetMemoryCopy
             {
                 if (t == typeof(short))
                 {
-                    bytes = await ReadBytes(stream, byteOrder, sizeof(short));
+                    bytes = await ReadBytes(stream, byteOrder,
+                        sizeof(short)).ConfigureAwait(false);
                     o = BitConverter.ToInt16(bytes, 0);
                 }
                 else if (t == typeof(ushort))
                 {
-                    bytes = await ReadBytes(stream, byteOrder, sizeof(ushort));
+                    bytes = await ReadBytes(stream, byteOrder,
+                        sizeof(ushort)).ConfigureAwait(false);
                     o = BitConverter.ToUInt16(bytes, 0);
                 }
                 else if (t == typeof(int))
                 {
-                    bytes = await ReadBytes(stream, byteOrder, sizeof(int));
+                    bytes = await ReadBytes(stream, byteOrder,
+                        sizeof(int)).ConfigureAwait(false);
                     o = BitConverter.ToInt32(bytes, 0);
                 }
                 else if (t == typeof(uint))
                 {
-                    bytes = await ReadBytes(stream, byteOrder, sizeof(uint));
+                    bytes = await ReadBytes(stream, byteOrder,
+                        sizeof(uint)).ConfigureAwait(false);
                     o = BitConverter.ToUInt32(bytes, 0);
                 }
                 else if (t == typeof(byte))
@@ -100,12 +104,14 @@ namespace NetMemoryCopy
                 }
                 else if (t == typeof(long))
                 {
-                    bytes = await ReadBytes(stream, byteOrder, sizeof(long));
+                    bytes = await ReadBytes(stream, byteOrder,
+                        sizeof(long)).ConfigureAwait(false);
                     o = BitConverter.ToInt64(bytes, 0);
                 }
                 else if (t == typeof(ulong))
                 {
-                    bytes = await ReadBytes(stream, byteOrder, sizeof(ulong));
+                    bytes = await ReadBytes(stream, byteOrder,
+                        sizeof(ulong)).ConfigureAwait(false);
                     o = BitConverter.ToUInt64(bytes, 0);
                 }
                 else
@@ -139,12 +145,12 @@ namespace NetMemoryCopy
                 if (pType.IsPrimitive)
                 {
                     property.SetValue(o, Convert.ChangeType(await Read(pType,
-                        stream, inherit), pType), null);
+                        stream, inherit).ConfigureAwait(false), pType), null);
                 }
                 else if (pVal is byte[])
                 {
-                    int len = ((byte[])pVal).Length;
-                    await ReadBytes(stream, (byte[])pVal);
+                    await ReadBytes(stream,
+                        (byte[])pVal).ConfigureAwait(false);
                 }
                 else
                 {
@@ -154,7 +160,7 @@ namespace NetMemoryCopy
                         for (int i = 0; i < ((Array)pVal).Length; i++)
                         {
                             a.SetValue(await Read(a.GetType().GetElementType(),
-                                stream, inherit), i);
+                                stream, inherit).ConfigureAwait(false), i);
                         }
                     }
                     else
@@ -175,7 +181,7 @@ namespace NetMemoryCopy
         /// <param name="data">Byte array where serialized data will be written.</param>
         /// <param name="startIndex">Index from which to start writing data.</param>
         /// <param name="inherit">Determines whether inherited properties should be serialized.</param>
-        public async Task Write(object o, Stream stream, bool inherit = true)
+        public async Task Write(object o, Stream stream, bool inherit)
         {
             byte[] bytes;
 
@@ -185,37 +191,43 @@ namespace NetMemoryCopy
                 {
                     bytes = BitConverter.GetBytes((short)o);
                     ReverseBytes(bytes, byteOrder);
-                    await stream.WriteAsync(bytes, 0, sizeof(short));
+                    await stream.WriteAsync(bytes, 0,
+                        sizeof(short)).ConfigureAwait(false);
                 }
                 else if (o is ushort)
                 {
                     bytes = BitConverter.GetBytes((ushort)o);
                     ReverseBytes(bytes, byteOrder);
-                    await stream.WriteAsync(bytes, 0, sizeof(ushort));
+                    await stream.WriteAsync(bytes, 0,
+                        sizeof(ushort)).ConfigureAwait(false);
                 }
                 else if (o is int)
                 {
                     bytes = BitConverter.GetBytes((int)o);
                     ReverseBytes(bytes, byteOrder);
-                    await stream.WriteAsync(bytes, 0, sizeof(int));
+                    await stream.WriteAsync(bytes, 0,
+                        sizeof(int)).ConfigureAwait(false);
                 }
                 else if (o is uint)
                 {
                     bytes = BitConverter.GetBytes((uint)o);
                     ReverseBytes(bytes, byteOrder);
-                    await stream.WriteAsync(bytes, 0, sizeof(uint));
+                    await stream.WriteAsync(bytes, 0,
+                        sizeof(uint)).ConfigureAwait(false);
                 }
                 else if (o is long)
                 {
                     bytes = BitConverter.GetBytes((long)o);
                     ReverseBytes(bytes, byteOrder);
-                    await stream.WriteAsync(bytes, 0, sizeof(long));
+                    await stream.WriteAsync(bytes, 0,
+                        sizeof(long)).ConfigureAwait(false);
                 }
                 else if (o is ulong)
                 {
                     bytes = BitConverter.GetBytes((ulong)o);
                     ReverseBytes(bytes, byteOrder);
-                    await stream.WriteAsync(bytes, 0, sizeof(ulong));
+                    await stream.WriteAsync(bytes, 0,
+                        sizeof(ulong)).ConfigureAwait(false);
                 }
                 else if (o is byte)
                 {
@@ -248,12 +260,13 @@ namespace NetMemoryCopy
 
                 if (pType.IsPrimitive)
                 {
-                    await Write(pVal, stream, inherit);
+                    await Write(pVal, stream, inherit).ConfigureAwait(false);
                 }
                 else if (pVal is byte[])
                 {
                     bytes = (byte[])pVal;
-                    await stream.WriteAsync(bytes, 0, bytes.Length);
+                    await stream.WriteAsync(bytes, 0,
+                        bytes.Length).ConfigureAwait(false);
                 }
                 else
                 {
@@ -262,7 +275,8 @@ namespace NetMemoryCopy
                     {
                         foreach (object item in a)
                         {
-                            await Write(item, stream, inherit);
+                            await Write(item, stream,
+                                inherit).ConfigureAwait(false);
                         }
                     }
                     else
@@ -347,7 +361,8 @@ namespace NetMemoryCopy
             int count = b.Length;
             while (count > 0)
             {
-                read = await stream.ReadAsync(b, offset, count);
+                read = await stream.ReadAsync(b, offset,
+                    count).ConfigureAwait(false);
                 if (read == 0)
                 {
                     // reached end of stream
@@ -362,7 +377,7 @@ namespace NetMemoryCopy
             ByteOrder byteOrder, int length)
         {
             byte[] bytes = new byte[length];
-            await ReadBytes(stream, bytes);
+            await ReadBytes(stream, bytes).ConfigureAwait(false);
             if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
                 (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
             {
