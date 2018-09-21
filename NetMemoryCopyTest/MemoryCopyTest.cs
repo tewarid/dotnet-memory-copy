@@ -119,8 +119,8 @@ namespace NetMemoryCopyTest
         byte[] cBigEndian;
         byte[] sBigEndian;
 
-        NetMemoryCopy.MemoryCopy bigCopy;
-        NetMemoryCopy.MemoryCopy littleCopy;
+        NetMemoryCopy.MemoryCopy beCopy;
+        NetMemoryCopy.MemoryCopy leCopy;
 
         [TestInitialize]
         public void Initialize()
@@ -142,16 +142,16 @@ namespace NetMemoryCopyTest
             s = new S(0x00AB00CD, -255);
             sBigEndian = new byte[6] { 0, 0xAB, 0, 0xCD, 0xFF, 0x01 };
 
-            bigCopy = new NetMemoryCopy.MemoryCopy();
-            littleCopy = new NetMemoryCopy.MemoryCopy();
-            littleCopy.ByteOrder = ByteOrder.LittleEndian;
+            beCopy = new NetMemoryCopy.MemoryCopy();
+            leCopy = new NetMemoryCopy.MemoryCopy();
+            leCopy.ByteOrder = ByteOrder.LittleEndian;
         }
 
         [TestMethod]
         public void TestWrite()
         {
             byte[] data = new byte[aBigEndian.Length];
-            bigCopy.Write(a, new MemoryStream(data), false);
+            beCopy.Write(a, new MemoryStream(data), false);
             CollectionAssert.AreEqual(aBigEndian, data);
         }
 
@@ -159,7 +159,7 @@ namespace NetMemoryCopyTest
         public void TestWriteInherit1()
         {
             byte[] data = new byte[b1BigEndianNoInheritance.Length];
-            bigCopy.Write(b1, new MemoryStream(data), false);
+            beCopy.Write(b1, new MemoryStream(data), false);
             CollectionAssert.AreEqual(b1BigEndianNoInheritance, data);
         }
 
@@ -167,7 +167,7 @@ namespace NetMemoryCopyTest
         public void TestWriteInherit2()
         {
             byte[] data = new byte[b1BigEndian.Length];
-            bigCopy.Write(b1, new MemoryStream(data), true);
+            beCopy.Write(b1, new MemoryStream(data), true);
             CollectionAssert.AreEqual(b1BigEndian, data);
         }
 
@@ -175,7 +175,7 @@ namespace NetMemoryCopyTest
         public void TestWriteLittleEndian()
         {
             byte[] data = new byte[b1LittleEndian.Length];
-            littleCopy.Write(b1, new MemoryStream(data), true);
+            leCopy.Write(b1, new MemoryStream(data), true);
             CollectionAssert.AreEqual(b1LittleEndian, data);
         }
 
@@ -183,7 +183,7 @@ namespace NetMemoryCopyTest
         public void TestWriteArray()
         {
             byte[] data = new byte[cBigEndian.Length];
-            bigCopy.Write(c, new MemoryStream(data), true);
+            beCopy.Write(c, new MemoryStream(data), true);
             CollectionAssert.AreEqual(cBigEndian, data);
         }
 
@@ -191,14 +191,14 @@ namespace NetMemoryCopyTest
         public void TestWriteStruct()
         {
             byte[] data = new byte[sBigEndian.Length];
-            bigCopy.Write(s, new MemoryStream(data), true);
+            beCopy.Write(s, new MemoryStream(data), true);
             CollectionAssert.AreEqual(sBigEndian, data);
         }
 
         [TestMethod]
         public async Task TestRead()
         {
-            A copy = (A) await bigCopy.Read(typeof(A),
+            A copy = (A) await beCopy.Read(typeof(A),
                 new MemoryStream(aBigEndian),
                 true).ConfigureAwait(false);
             Assert.AreEqual(a.Command, copy.Command);
@@ -207,7 +207,7 @@ namespace NetMemoryCopyTest
         [TestMethod]
         public async Task TestReadInherit1()
         {
-            B copy = (B) await bigCopy.Read(typeof(B),
+            B copy = (B) await beCopy.Read(typeof(B),
                 new MemoryStream(b1BigEndianNoInheritance),
                 false).ConfigureAwait(false);
             Assert.AreNotEqual(b1.Command, copy.Command);
@@ -218,7 +218,7 @@ namespace NetMemoryCopyTest
         [TestMethod]
         public async Task TestReadInherit2()
         {
-            B copy = (B) await bigCopy.Read(typeof(B),
+            B copy = (B) await beCopy.Read(typeof(B),
                 new MemoryStream(b1BigEndian),
                 true).ConfigureAwait(false);
             Assert.AreEqual(b1.Command, copy.Command);
@@ -229,7 +229,7 @@ namespace NetMemoryCopyTest
         [TestMethod]
         public async Task TestReadLittleEndian()
         {
-            B copy = (B) await littleCopy.Read(typeof(B),
+            B copy = (B) await leCopy.Read(typeof(B),
                 new MemoryStream(b1LittleEndian),
                 true).ConfigureAwait(false);
             Assert.AreEqual(b1.Command, copy.Command);
@@ -240,7 +240,7 @@ namespace NetMemoryCopyTest
         [TestMethod]
         public async Task TestReadArray()
         {
-            C copy = (C) await bigCopy.Read(typeof(C),
+            C copy = (C) await beCopy.Read(typeof(C),
                 new MemoryStream(cBigEndian),
                 true).ConfigureAwait(false);
             Assert.AreEqual(c.Length, copy.Length);
@@ -255,7 +255,7 @@ namespace NetMemoryCopyTest
         [TestMethod]
         public async Task TestReadStruct()
         {
-            S copy = (S) await bigCopy.Read(typeof(S),
+            S copy = (S) await beCopy.Read(typeof(S),
                 new MemoryStream(sBigEndian),
                 true).ConfigureAwait(false);
             Assert.AreEqual(s.Command, copy.Command);

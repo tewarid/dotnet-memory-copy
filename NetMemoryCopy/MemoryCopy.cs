@@ -376,14 +376,10 @@ namespace NetMemoryCopy
         private static async Task<byte[]> ReadBytes(Stream stream,
             ByteOrder byteOrder, int length)
         {
-            byte[] bytes = new byte[length];
-            await ReadBytes(stream, bytes).ConfigureAwait(false);
-            if ((byteOrder == ByteOrder.BigEndian && BitConverter.IsLittleEndian) ||
-                (byteOrder == ByteOrder.LittleEndian && !BitConverter.IsLittleEndian))
-            {
-                ReverseBytes(bytes);
-            }
-            return bytes;
+            byte[] b = new byte[length];
+            await ReadBytes(stream, b).ConfigureAwait(false);
+            ReverseBytes(b, byteOrder);
+            return b;
         }
 
         public static void ReverseBytes(byte[] inArray, ByteOrder byteOrder)
