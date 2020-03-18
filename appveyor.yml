@@ -1,6 +1,11 @@
-version: 1.0.{build}
+version: 2.0.{build}
 nuget:
   project_feed: true
+assembly_info:
+  patch: true
+  file: AssemblyInfo.cs
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
 build:
   project: NetMemoryCopy.sln
   publish_nuget: true
