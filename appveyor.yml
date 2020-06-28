@@ -1,4 +1,7 @@
 version: 2.0.{build}
+image: Visual Studio 2019
+skip_tags: true
+configuration: Release
 nuget:
   project_feed: true
 assembly_info:
@@ -6,6 +9,12 @@ assembly_info:
   file: AssemblyInfo.cs
   assembly_version: '{version}'
   assembly_file_version: '{version}'
+dotnet_csproj:
+  patch: true
+  file: '**\*.csproj'
+  package_version: '{version}'
+before_build:
+  - nuget restore NetMemoryCopy.sln
 build:
   project: NetMemoryCopy.sln
   publish_nuget: true
