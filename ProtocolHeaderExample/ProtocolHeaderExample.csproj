@@ -52,9 +52,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NetMemoryCopy\NetMemoryCopy.csproj">
+    <ProjectReference Include="..\MemoryCopy\MemoryCopy.csproj">
       <Project>{0bd451cc-8980-42aa-b0b3-e1b04b88b7a3}</Project>
-      <Name>NetMemoryCopy</Name>
+      <Name>MemoryCopy</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

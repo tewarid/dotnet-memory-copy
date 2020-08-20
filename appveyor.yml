@@ -1,4 +1,4 @@
-version: 2.0.{build}
+version: 3.0.{build}
 image: Visual Studio 2019
 skip_tags: true
 configuration: Release
@@ -14,9 +14,9 @@ dotnet_csproj:
   file: '**\*.csproj'
   package_version: '{version}'
 before_build:
-  - nuget restore NetMemoryCopy.sln
+  - nuget restore MemoryCopy.sln
 build:
-  project: NetMemoryCopy.sln
+  project: MemoryCopy.sln
   publish_nuget: true
   publish_nuget_symbols: true
   include_nuget_references: true

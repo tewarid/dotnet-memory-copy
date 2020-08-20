@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using NetMemoryCopy;
+using MemoryCopy;
 
 namespace ProtocolHeaderExample
 {
@@ -32,7 +32,7 @@ namespace ProtocolHeaderExample
             byte[] data = { 0x0, 0x1, 0x0, 0x5, 0x01, 0x02, 0x03, 0x04, 0x05 };
             MemoryStream stream = new MemoryStream(data);
 
-            MemoryCopy copy = new MemoryCopy();
+            MemoryCopy.MemoryCopy copy = new MemoryCopy.MemoryCopy();
             copy.ByteOrder = ByteOrder.BigEndian; // default
 
             FixedHeader h;
